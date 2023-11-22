@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Archivos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <script src="/script.js"></script>
+  </head>
+  <body onload="renderDirectories()">
+    <main class="container">
+      <nav aria-label="breadcrumb">
+        <ul>
+          <li><strong id="dir">root</strong></li>
+          <li></li>
+        </ul>
+      </nav>
+      <article>
+        <section id="files">
+        </section>
+
+      <footer>
+        <input type="text" placeholder="Archivo o directorio..." id="input" name="input">
+        <div class="grid">
+          <button class="contrast" onclick="createFile()">Nuevo archivo</button>
+          <button class="contrast" onclick="createDir()">Nuevo directorio</button>
+          <button class="secondary" onclick="removeFileOrDir()">Borrar</button>
+        </div>
+
+      </footer>
+      </article>
+    </main>
+  </body>
+</html>
