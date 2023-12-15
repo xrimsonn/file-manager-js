@@ -4,6 +4,24 @@ body {
   font-family: 'IBM Plex Sans', sans-serif;
 }
 
+li > strong:hover {
+  color: rgb(210, 210, 210);
+  cursor: pointer;
+}
+
+tbody > tr:hover {
+  filter: brightness(110%);
+  cursor: pointer;
+}
+
+i:hover {
+  cursor: pointer;
+}
+
+td > i {
+  margin-right: 8px;
+}
+
 h2,
 h3,
 h4,

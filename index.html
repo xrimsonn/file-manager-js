@@ -4,31 +4,58 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Archivos</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
-    <link rel="stylesheet" href="/style.css">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css"
+    />
+    <script
+      src="https://kit.fontawesome.com/a41d3240c2.js"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="/style.css" />
     <script src="/script.js"></script>
   </head>
   <body onload="renderDirectories()">
     <main class="container">
       <nav aria-label="breadcrumb">
-        <ul>
-          <li><strong id="dir">root</strong></li>
-          <li></li>
+        <ul id="directories">
+          <li id="1"><strong onclick="goToDirectory()">root</strong></li>
         </ul>
       </nav>
       <article>
-        <section id="files">
-        </section>
-
-      <footer>
-        <input type="text" placeholder="Archivo o directorio..." id="input" name="input">
-        <div class="grid">
-          <button class="contrast" onclick="createFile()">Nuevo archivo</button>
-          <button class="contrast" onclick="createDir()">Nuevo directorio</button>
-          <button class="secondary" onclick="removeFileOrDir()">Borrar</button>
-        </div>
-
-      </footer>
+        <figure id="view">
+          <i class="fa-solid fa-bars" style="float: right;"></i>
+          <table>
+            <thead>
+              <tr>
+                <th><strong>#</strong></th>
+                <th><strong>Nombre</strong></th>
+                <th><strong>Tipo</strong></th>
+                <th><strong>Fecha de creación</strong></th>
+              </tr>
+            </thead>
+            <tbody id="files"></tbody>
+          </table>
+        </figure>
+        <!--footer>
+          <input
+            type="text"
+            placeholder="Archivo o directorio..."
+            id="input"
+            name="input"
+          />
+          <div class="grid">
+            <button class="contrast" onclick="createFile()">
+              Nuevo archivo
+            </button>
+            <button class="contrast" onclick="createDir()">
+              Nuevo directorio
+            </button>
+            <button class="secondary" onclick="removeFileOrDir()">
+              Borrar
+            </button>
+          </div>
+        </footer-->
       </article>
     </main>
   </body>

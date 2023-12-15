@@ -1,9 +1,9 @@
-// Clase que representa un archivo
 class File {
   constructor(name, content = '') {
     this.name = name;
     this.content = content;
-    this.isDir = false; // Indica si es un directorio o no
+    this.isDirectory = false;
+    this.created = new Date();
   }
 }
 
@@ -11,8 +11,9 @@ class File {
 class Directory {
   constructor(name) {
     this.name = name;
-    this.isDir = true; // Siempre es un directorio
+    this.isDirectory = true; // Siempre es un directorio
     this.children = []; // Almacena archivos y subdirectorios
+    this.created = new Date();
   }
 }
 
@@ -35,7 +36,7 @@ class FileManager {
       return node;
     }
 
-    if (node.isDir) {
+    if (node.isDirectory) {
       for (const child of node.children) {
         const result = this.findNodeByName(child, name);
         if (result) {
@@ -62,17 +63,29 @@ class FileManager {
     console.log(
       '  '.repeat(depth) +
         node.name +
-        (node.isDir ? '/' : ':') +
+        (node.isDirectory ? '/' : ':') +
         '\n' +
         '  '.repeat(depth) +
-        (node.isDir ? '' : node.content)
+        (node.isDirectory ? '' : node.content)
     );
-    if (node.isDir) {
+    if (node.isDirectory) {
       for (const child of node.children) {
         this.displayDirectoryStructure(child, depth + 1);
       }
     }
   }
+}
+
+function padTo2Digits(num) {
+  return num.toString().padStart(2, '0');
+}
+
+function formatDate(date) {
+  return [
+    date.getFullYear(),
+    padTo2Digits(date.getMonth() + 1),
+    padTo2Digits(date.getDate()),
+  ].join('-');
 }
 
 // Crea una instancia de la clase FileManager
@@ -84,6 +97,8 @@ const documents = fileManager.addFileOrDirectory(root, 'documents');
 const pictures = fileManager.addFileOrDirectory(root, 'pictures');
 const vacation = fileManager.addFileOrDirectory(pictures, 'vacation');
 const work = fileManager.addFileOrDirectory(documents, 'work');
+const mate = fileManager.addFileOrDirectory(work, 'mate');
+
 const report = fileManager.addFileOrDirectory(
   work,
   'report',
@@ -93,59 +108,86 @@ const report = fileManager.addFileOrDirectory(
 
 // Función para renderizar la estructura de directorios en una interfaz de usuario
 function renderDirectories(node = root) {
-  const currentDir = fileManager.findNodeByName(
-    node,
-    document.getElementById('dir').innerHTML
-  );
-  const ul = document.createElement('ul');
-  const display = document.getElementById('files');
   const goBack = document.createElement('li');
   var lastDir;
+  const currentDir = fileManager.findNodeByName(
+    node,
+    document.getElementById('directories').lastElementChild.lastElementChild
+      .innerHTML
+  );
 
-  fileManager.getChildren(currentDir).forEach((child) => {
-    const li = document.createElement('li');
+  const display = document.getElementById('files');
 
-    // Verifica si el directorio actual no es el directorio raíz
-    if (currentDir.name !== 'root') {
-      goBack.textContent = '..';
+  fileManager.getChildren(currentDir).forEach((child, i) => {
+    const tr = document.createElement('tr');
+    const num = document.createElement('td');
+    const name = document.createElement('td');
+    const type = document.createElement('td');
+    const date = document.createElement('td');
+    const icon = document.createElement('i');
 
-      // Agrega el botón "Atrás" al principio de la lista
-      ul.appendChild(goBack);
+    num.innerHTML = i + 1;
+    date.innerHTML = formatDate(child.created);
 
-      // Agrega un evento al botón "Atrás" para retroceder al directorio anterior
-      goBack.addEventListener('click', () => {
-        console.log(lastDir.name); // Imprime el nombre del directorio anterior en la consola
-        display.innerHTML = ''; // Limpia el área de visualización
-        renderDirectories(lastDir); // Renderiza el contenido del directorio anterior
+    if (child.isDirectory) {
+      type.innerHTML = 'Directorio';
+      icon.classList = 'fa-solid fa-folder';
+      name.appendChild(icon);
+      tr.addEventListener('click', function () {
+        lastDir = currentDir;
+        console.log(lastDir);
+        display.innerHTML = '';
+
+        const strong = document.createElement('strong');
+        const li = document.createElement('li');
+        strong.innerHTML = child.name;
+        strong.onclick = goToDirectory;
+        li.appendChild(strong);
+        li.setAttribute('id', parseInt(document.getElementById('directories').lastElementChild.id) + 1);
+        document.getElementById('directories').append(li);
+        renderDirectories(child);
       });
-    }
-
-    if (child.isDir) {
-      li.textContent = child.name + '/'; // Agrega una barra "/" al final del nombre del directorio
-      li.addEventListener('click', function () {
-        lastDir = currentDir; // Almacena el directorio actual antes de cambiar
-        console.log(lastDir); // Imprime el directorio actual en la consola
-        display.innerHTML = ''; // Limpia el área de visualización
-        document.getElementById('dir').innerHTML = child.name; // Actualiza el nombre del directorio en la interfaz
-        renderDirectories(child); // Renderiza el contenido del nuevo directorio
-      });
+      display.appendChild(tr);
     } else {
-      li.textContent = child.name; // Agrega el nombre del archivo
-      li.addEventListener('click', function () {
-        lastDir = currentDir; // Almacena el directorio actual antes de cambiar
-        console.log(lastDir); // Imprime el directorio actual en la consola
-        display.innerHTML = ''; // Limpia el área de visualización
-        document.getElementById('dir').innerHTML = child.name; // Actualiza el nombre del archivo en la interfaz
+      type.innerHTML = 'Archivo';
+      icon.classList = 'fa-solid fa-file';
+      name.appendChild(icon);
+      tr.addEventListener('click', function () {
+        const view = document.getElementById('view');
+        view.innerHTML = '';
+        lastDir = currentDir;
+        console.log(lastDir);
+        display.innerHTML = '';
+        var h4 = document.createElement('h4');
+        h4.textContent = child.name + ':';
         var pre = document.createElement('pre');
         pre.textContent = child.content;
-        display.appendChild(pre); // Muestra el contenido del archivo en un área de visualización
+        view.appendChild(h4);
+        view.appendChild(pre);
       });
     }
+    name.append(child.name);
+    tr.appendChild(num);
+    tr.appendChild(name);
+    tr.appendChild(type);
+    tr.appendChild(date);
 
-    ul.appendChild(li); // Agrega el elemento de lista al elemento de lista principal
+    // Verifica si el directorio actual no es el directorio raíz
+    // if (currentDir.name !== 'root') {
+    //   goBack.textContent = '..';
+
+    //   // Agrega el botón "Atrás" al principio de la lista
+    //   tr.appendChild(goBack);
+
+    //   // Agrega un evento al botón "Atrás" para retroceder al directorio anterior
+    //   goBack.addEventListener('click', () => {
+    //     console.log(lastDir.name); // Imprime el nombre del directorio anterior en la consola
+    //     display.innerHTML = ''; // Limpia el área de visualización
+    //     renderDirectories(lastDir); // Renderiza el contenido del directorio anterior
+    //   });
+    // }
+    display.appendChild(tr); // Agrega la lista al área de visualización
   });
-
-  display.appendChild(ul); // Agrega la lista al área de visualización
 }
 
 // Función para crear un nuevo archivo
@@ -157,8 +199,8 @@ function createFile() {
   const name = document.getElementById('input').value;
   if (name === '') return; // Si no se proporciona un nombre, sale de la función
   fileManager.addFileOrDirectory(currentDir, name, false); // Agrega un nuevo archivo al directorio actual
-  document.getElementById('input').value = ''; 
-  document.getElementById('files').innerHTML = ''; 
+  document.getElementById('input').value = '';
+  document.getElementById('files').innerHTML = '';
   renderDirectories(currentDir); // Renderiza el contenido del directorio actual
 }
 
@@ -171,8 +213,8 @@ function createDir() {
   const name = document.getElementById('input').value;
   if (name === '') return; // Si no se proporciona un nombre, sale de la función
   fileManager.addFileOrDirectory(currentDir, name, true); // Agrega un nuevo directorio al directorio actual
-  document.getElementById('input').value = ''; 
-  document.getElementById('files').innerHTML = ''; 
+  document.getElementById('input').value = '';
+  document.getElementById('files').innerHTML = '';
   renderDirectories(currentDir); // Renderiza el contenido del directorio actual
 }
 
@@ -184,7 +226,21 @@ function removeFileOrDir() {
   );
   const name = document.getElementById('input').value;
   fileManager.deleteFileOrDirectory(currentDir, name); // Elimina el archivo o directorio del directorio actual
-  document.getElementById('input').value = ''; 
+  document.getElementById('input').value = '';
   document.getElementById('files').innerHTML = '';
   renderDirectories(currentDir); // Renderiza el contenido del directorio actual
+}
+
+function goToDirectory() {
+  const directory = event.target.innerHTML;
+  const pointedDir = fileManager.findNodeByName(root, directory);
+
+  const limit = parseInt(document.getElementById('directories').lastElementChild.id);
+  for (let i = 1; i <= limit; i++) {
+    if (parseInt(document.getElementById('directories').children[i].id) > parseInt(event.target.parentElement.id)) {
+      document.getElementById('directories').children[i].remove();
+    }
+  }
+  document.getElementById('files').innerHTML = '';
+  renderDirectories(pointedDir);
 }
